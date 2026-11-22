@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tubuh Ideal</title>
+<meta name="description" content="Hitung BMI, berat ideal, dan prediksi tinggi badan, lengkap dengan saran.">
+<meta name="theme-color" content="#ff5a36">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+:root{--bg:#f2f6f4;--card:#fff;--ink:#14231e;--mute:#5b6e67;--line:#d5e0db;--track:#d3e0da;--accent:#0f766e;--on:#fff;
+--c1:#3b82c4;--c2:#2f9e6b;--c3:#e0a526;--c4:#d4533b;--hot:#ff5a36;--sun:#ffb703;--pink:#e5509b;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1815;--card:#16241f;--ink:#e8f1ed;--mute:#9bb0a8;--line:#27392f;--track:#35493f;--accent:#34d3c0;--on:#06231e;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1815;--card:#16241f;--ink:#e8f1ed;--mute:#9bb0a8;--line:#27392f;--track:#35493f;--accent:#34d3c0;--on:#06231e;color-scheme:dark}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:radial-gradient(520px 260px at 100% -4%,rgba(255,90,54,.2),transparent 65%),radial-gradient(480px 280px at 0% 8%,rgba(45,212,191,.22),transparent 65%),var(--bg);background-repeat:no-repeat}
+main{max-width:480px;margin:0 auto;padding:24px 18px 40px}
+h1{font-size:1.7rem;line-height:1.2;margin:0 0 6px;letter-spacing:-.01em}
+.sub{color:var(--mute);margin:0 0 18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 14px 34px -22px rgba(15,118,110,.6)}
+.form{border:1.5px solid transparent;background:linear-gradient(var(--card),var(--card)) padding-box,linear-gradient(135deg,var(--hot),var(--sun),#2dd4bf) border-box}
+.lbl{display:block;font-weight:700;font-size:.85rem;color:var(--mute)}
+button{width:100%;font:inherit;font-weight:700;padding:14px;border:0;border-radius:12px;background:var(--accent);color:var(--on);cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+#hitung,#prediksi{background:linear-gradient(100deg,var(--hot),var(--sun));color:#1a1209;box-shadow:0 8px 20px -8px rgba(255,90,54,.7)}
+#err,#err2{color:var(--c4);margin:10px 0 0;min-height:1.2em;font-size:.9rem}
+.tabs{display:flex;gap:4px;padding:4px;margin-bottom:16px;background:var(--card);border:1px solid var(--line);border-radius:16px}
+.tab{flex:1;width:auto;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 8px;background:transparent;color:var(--mute);border-radius:12px}
+.tab svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tab[aria-pressed="true"]{background:linear-gradient(100deg,var(--hot),var(--sun));color:#1a1209;box-shadow:0 6px 16px -8px rgba(255,90,54,.8)}
+.tab:focus-visible{outline:2px solid var(--ink);outline-offset:-4px}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 14px}
+.choice button{width:auto;display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px;border-radius:14px;background:var(--bg);color:var(--ink);border:2px solid var(--line)}
+.choice .g{font-size:1.8rem;line-height:1}
+.choice [data-v="1"] .g{color:var(--c1)}
+.choice [data-v="2"] .g{color:var(--pink)}
+.choice button[aria-checked="true"]{border-color:var(--hot);background:rgba(255,90,54,.13)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 14px}
+.tile{display:block;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--bg);cursor:text}
+.tile:focus-within{border-color:var(--hot);box-shadow:0 0 0 3px rgba(255,90,54,.25)}
+.row{display:flex;align-items:baseline;gap:6px}
+.tile input{width:100%;min-width:0;margin:0;padding:0;border:0;background:transparent;color:var(--ink);font:inherit;font-size:1.9rem;font-weight:800}
+.tile input:focus-visible{outline:none}
+.tile input::-webkit-outer-spin-button,.tile input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.tile input[type=number]{-moz-appearance:textfield}
+.unit{color:var(--mute);font-weight:700}
+/* hasil: satu pola untuk berat dan tinggi */
+.verdict{font-weight:800;font-size:1.05rem;margin-bottom:6px}
+.bigrow{display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px}
+.bmi{font-size:3.2rem;font-weight:800;line-height:1.05;letter-spacing:-.02em}
+.chip{padding:6px 12px;border-radius:999px;font-weight:800;font-size:.9rem}
+.story{font-size:1.02rem;margin:10px 0 0}
+.bar{position:relative;height:16px;border-radius:8px;background:var(--track);margin:30px 0 38px}
+.fill{position:absolute;inset:0;border-radius:8px;overflow:hidden}
+.seg{position:absolute;top:0;height:100%}
+.lb{position:absolute;top:24px;transform:translateX(-50%);font-size:.72rem;color:var(--mute);white-space:nowrap}
+.pin2{position:absolute;top:-7px;width:5px;height:30px;margin-left:-2.5px;border-radius:3px;background:var(--ink);box-shadow:0 0 0 2px var(--card)}
+.tick{position:absolute;top:-17px;margin-left:-7px;width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:10px solid var(--c3)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.82rem;color:var(--mute);margin-bottom:12px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.legend .p{width:4px;height:12px;background:var(--ink);border-radius:2px;margin-right:6px}
+.legend .t{background:var(--c3)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 6px}
+.st{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center}
+.st b{display:block;font-size:1.02rem;line-height:1.25}
+.st span{font-size:.72rem;color:var(--mute);line-height:1.2;display:block;margin-top:2px}
+h2{font-size:1rem;margin:18px 0 6px}
+p{margin:0 0 8px}
+ul{margin:0;padding-left:18px}
+li{margin-bottom:8px;overflow-wrap:anywhere}
+a{color:var(--accent);font-weight:600}
+.note{font-size:.8rem;color:var(--mute)}
+.off{display:none!important}
+#hasil[hidden]{display:none}
+.hero{display:flex;align-items:center;gap:12px;padding:12px 14px;margin-bottom:18px;border-radius:14px;color:#1a1209;font-weight:700;overflow:hidden;background:linear-gradient(100deg,#ff5a36,#ffb703,#2dd4bf,#ff5a36);background-size:200% 100%;animation:flow 10s linear infinite}
+.beat{flex:none;width:34px;height:34px;fill:#fff;filter:drop-shadow(0 1px 3px rgba(0,0,0,.4));animation:beat 1.3s ease-in-out infinite}
+.ticker{flex:1;min-width:0;overflow:hidden;white-space:nowrap;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.track{display:flex;width:max-content;animation:slide 32s linear infinite}
+.grp{display:flex;flex-shrink:0}
+.grp span{padding-right:26px}
+.grp span::after{content:"\2726";margin-left:26px;opacity:.7}
+@keyframes flow{to{background-position:200% 0}}
+@keyframes slide{to{transform:translateX(-50%)}}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.28)}30%{transform:scale(1)}45%{transform:scale(1.18)}}
+@media (prefers-reduced-motion:reduce){.hero,.beat,.track{animation:none}.ticker{overflow-x:auto;-webkit-mask-image:none;mask-image:none}}
+</style>
+</head>
+<body>
+<main>
+  <div class="hero">
+    <svg class="beat" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+    <div class="ticker"><div class="track">
+      <div class="grp"><span>Bergeraklah minimal 150 menit per minggu</span><span>Tidur cukup, tubuh pun pulih</span><span>Minum air putih sepanjang hari</span><span>Isi piring dengan sayur dan buah</span><span>BMI hanyalah awal, bukan vonis</span><span>Tinggi badan dipengaruhi gen, nutrisi, dan gaya hidup</span></div>
+      <div class="grp" aria-hidden="true"><span>Bergeraklah minimal 150 menit per minggu</span><span>Tidur cukup, tubuh pun pulih</span><span>Minum air putih sepanjang hari</span><span>Isi piring dengan sayur dan buah</span><span>BMI hanyalah awal, bukan vonis</span><span>Tinggi badan dipengaruhi gen, nutrisi, dan gaya hidup</span></div>
+    </div></div>
+  </div>
+
+  <h1>Cek Tubuh Idealmu</h1>
+  <p class="sub" id="sub"></p>
+
+  <div class="tabs">
+    <button id="tabBmi" class="tab" type="button" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 13l4-4"/></svg>Berat &amp; BMI</button>
+    <button id="tabTinggi" class="tab" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4"/></svg>Prediksi tinggi</button>
+  </div>
+
+  <div class="card form">
+    <span class="lbl">Jenis kelaminmu</span>
+    <div class="choice" role="radiogroup" aria-label="Jenis kelamin" data-for="gBmi">
+      <button type="button" role="radio" aria-checked="false" data-v="1"><span class="g" aria-hidden="true">&#9794;</span>Pria</button>
+      <button type="button" role="radio" aria-checked="false" data-v="2"><span class="g" aria-hidden="true">&#9792;</span>Wanita</button>
+    </div>
+    <input type="hidden" id="gBmi">
+    <div class="pair">
+      <label class="tile"><span class="lbl">Berat badan</span><span class="row"><input id="berat" type="number" inputmode="decimal" min="1" step="0.1" placeholder="65"><span class="unit">kg</span></span></label>
+      <label class="tile"><span class="lbl">Tinggi badan</span><span class="row"><input id="tinggi" type="number" inputmode="decimal" min="1" step="0.1" placeholder="170"><span class="unit">cm</span></span></label>
+    </div>
+    <button id="hitung" type="button">Hitung BMI</button>
+    <p id="err" role="alert"></p>
+  </div>
+
+  <div id="hasil" class="card" hidden>
+    <div class="verdict" id="vd"></div>
+    <div class="bigrow"><span class="bmi" id="bmi"></span><span class="chip" id="kat"></span></div>
+    <p class="story" id="story"></p>
+    <div class="bar" id="barBerat" aria-hidden="true"></div>
+    <div class="legend" id="legBerat"></div>
+    <div class="stats" id="stBerat"></div>
+    <h2>Langkah kecil untukmu</h2>
+    <ul id="langkah"></ul>
+    <h2>Mau belajar lebih jauh?</h2>
+    <ul id="tutor"></ul>
+    <p class="note">BMI dan Broca adalah indikator kasar, bukan diagnosis. Rumus Broca: (tinggi dalam cm dikurangi 100) dikurangi 10% untuk pria atau 15% untuk wanita. Perbandingan tinggi dibuat untuk orang dewasa. Untuk kondisi khusus, konsultasikan ke dokter atau ahli gizi.</p>
+  </div>
+
+  <section id="panelTinggi" class="off">
+    <div class="card form">
+      <span class="lbl">Jenis kelaminmu</span>
+      <div class="choice" role="radiogroup" aria-label="Jenis kelamin" data-for="gender">
+        <button type="button" role="radio" aria-checked="false" data-v="1"><span class="g" aria-hidden="true">&#9794;</span>Pria</button>
+        <button type="button" role="radio" aria-checked="false" data-v="2"><span class="g" aria-hidden="true">&#9792;</span>Wanita</button>
+      </div>
+      <input type="hidden" id="gender">
+      <div class="pair">
+        <label class="tile"><span class="lbl">Tinggi ayah</span><span class="row"><input id="ayah" type="number" inputmode="decimal" min="1" step="0.1" placeholder="172"><span class="unit">cm</span></span></label>
+        <label class="tile"><span class="lbl">Tinggi ibu</span><span class="row"><input id="ibu" type="number" inputmode="decimal" min="1" step="0.1" placeholder="160"><span class="unit">cm</span></span></label>
+      </div>
+      <button id="prediksi" type="button">Prediksi tinggi</button>
+      <p id="err2" role="alert"></p>
+    </div>
+    <div id="hasil2" class="card" hidden>
+      <div class="verdict" id="vd2"></div>
+      <div class="bigrow"><span class="bmi" id="tp"></span><span class="chip" id="tpk"></span></div>
+      <p class="story" id="story2"></p>
+      <div class="bar" id="barTinggi" aria-hidden="true"></div>
+      <div class="legend" id="legTinggi"></div>
+      <div class="stats" id="stTinggi"></div>
+      <p class="note">Masih bertumbuh? Tidur cukup, makan bergizi (termasuk protein), dan aktif bergerak membantu tubuh mencapai potensi tingginya.</p>
+      <p class="note">Ini hanya prediksi, dan kisarannya bisa meleset sekitar 8,5 cm. Rata-rata Indonesia: sekitar 166 cm (pria) dan 154 cm (wanita), perkiraan dari NCD-RisC dan World Population Review. Sumber lain bisa memberi angka sedikit berbeda.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+var DATA = {
+  kurus: {head:'\uD83C\uDF31 Tubuhmu butuh tenaga ekstra', kat:'Kurus', color:'#3b82c4', fg:'#fff',
+    story:function(g){return 'Berat badanmu sekitar ' + r1(g) + ' kg di bawah batas sehat. Tenang, ini sangat bisa diperbaiki. Naik pelan-pelan lewat makanan bergizi jauh lebih baik daripada makan sebanyak-banyaknya.';},
+    steps:['Tambah satu camilan bergizi di antara waktu makan.','Pilih makanan padat gizi, seperti nasi, telur, kacang, dan alpukat.','Latihan beban ringan 2\u20133 kali seminggu untuk membangun otot.'],
+    links:[['Alodokter: cara menggemukkan badan dengan sehat','https://www.alodokter.com/7-cara-menggemukkan-badan-dengan-cepat-dan-sehat'],
+           ['Hello Sehat: 7 cara menaikkan berat badan','https://hellosehat.com/nutrisi/berat-badan-turun/7-cara-menaikkan-berat-badan/']],
+    yt:'cara menaikkan berat badan sehat'},
+  normal: {head:'\uD83C\uDF89 Kerja bagus!', kat:'Normal (ideal)', color:'#2f9e6b', fg:'#04170f',
+    story:function(){return 'Berat badanmu ada di zona ideal untuk tinggimu. Ini hasil kebiasaan yang patut kamu banggakan. Tugas berikutnya sederhana: pertahankan.';},
+    steps:['Pertahankan pola makan seimbang.','Bergeraklah aktif minimal 150 menit per minggu.','Tidur cukup dan timbang diri secara berkala.'],
+    links:[['Alodokter','https://www.alodokter.com'],['Halodoc','https://www.halodoc.com']],
+    yt:'tips menjaga berat badan ideal'},
+  gemuk: {head:'\uD83D\uDCAA Kamu sudah selangkah lebih dekat', kat:'Gemuk', color:'#e0a526', fg:'#1a1209',
+    story:function(g){return 'Berat badanmu sekitar ' + r1(g) + ' kg di atas batas ideal. Kabar baiknya, selisih sebesar ini bisa dikejar lewat perubahan kecil yang konsisten, tanpa diet ekstrem.';},
+    steps:['Ganti minuman manis dengan air putih.','Isi setengah piringmu dengan sayur dan buah.','Jalan kaki 30 menit, sebagian besar hari dalam seminggu.'],
+    links:[['Alodokter: turunkan berat badan tanpa lapar','https://www.alodokter.com/cara-mudah-turunkan-berat-badan-tanpa-lapar'],
+           ['Halodoc: tips diet sehat','https://www.halodoc.com/artikel/tips-diet-sehat-untuk-turunkan-berat-badan-yang-bisa-dicoba']],
+    yt:'cara diet sehat menurunkan berat badan'},
+  obesitas: {head:'\uD83E\uDD1D Terima kasih sudah mau mengecek', kat:'Obesitas', color:'#d4533b', fg:'#fff',
+    story:function(g){return 'Berat badanmu sekitar ' + r1(g) + ' kg di atas batas ideal. Ini bukan soal penampilan, tapi kesehatan jangka panjang. Kamu tidak perlu berubah drastis hari ini. Mulailah dari satu kebiasaan kecil, dan ajak dokter atau ahli gizi menemanimu.';},
+    steps:['Mulai dari satu perubahan kecil, misalnya kurangi minuman manis atau gorengan.','Tambah jalan kaki sedikit demi sedikit setiap hari.','Konsultasikan rencana makan dan olahragamu ke dokter atau ahli gizi.'],
+    links:[['Alodokter: obesitas','https://www.alodokter.com/obesitas'],
+           ['Hello Sehat: cara mengatasi obesitas','https://hellosehat.com/nutrisi/obesitas/cara-mengatasi-obesitas/']],
+    yt:'cara mengatasi obesitas'}
+};
+var RATA = {'1':166, '2':154};
+var ZONE = 'linear-gradient(90deg,#14b8a6,#34d3c0)';
+var SUB = {
+  bmi:'Isi jenis kelamin, berat, dan tinggi badanmu. Kamu akan tahu BMI dan kategorinya, berat ideal, tinggimu dibanding rata-rata Indonesia, plus saran yang pas untukmu.',
+  tinggi:'Isi jenis kelamin serta tinggi ayah dan ibumu. Kamu akan tahu perkiraan tinggi dewasamu, kisarannya, dan posisinya dibanding rata-rata Indonesia.'
+};
+
+function el(id){return document.getElementById(id);}
+function r1(x){ return Math.round(x * 10) / 10; }
+function sgn(x){ return (x >= 0 ? '+' : '\u2212') + Math.round(Math.abs(x)) + ' cm'; }
+
+function drawBar(id, o){
+  var b = el(id); b.textContent = '';
+  function p(x){ return Math.max(0, Math.min(100, (x - o.min) / (o.max - o.min) * 100)); }
+  var f = document.createElement('div'); f.className = 'fill'; b.appendChild(f);
+  o.segs.forEach(function(s){
+    var d = document.createElement('div'); d.className = 'seg';
+    d.style.left = p(s[0]) + '%'; d.style.width = (p(s[1]) - p(s[0])) + '%'; d.style.background = s[2];
+    f.appendChild(d);
+    if (s[3]) {
+      var l = document.createElement('span'); l.className = 'lb'; l.textContent = s[3];
+      l.style.left = Math.max(10, Math.min(90, (p(s[0]) + p(s[1])) / 2)) + '%';
+      b.appendChild(l);
+    }
+  });
+  var k = document.createElement('i'); k.className = 'tick'; k.style.left = p(o.tick) + '%'; b.appendChild(k);
+  var n = document.createElement('i'); n.className = 'pin2'; n.style.left = p(o.pin) + '%'; b.appendChild(n);
+}
+
+function legend(id, items){
+  var d = el(id); d.textContent = '';
+  items.forEach(function(it){
+    var s = document.createElement('span'), i = document.createElement('i');
+    i.className = it[0]; if (it[1]) i.style.background = it[1];
+    s.appendChild(i); s.appendChild(document.createTextNode(it[2])); d.appendChild(s);
+  });
+}
+
+function stats(id, items){
+  var d = el(id); d.textContent = '';
+  items.forEach(function(it){
+    var c = document.createElement('div'), b = document.createElement('b'), s = document.createElement('span');
+    c.className = 'st'; b.textContent = it[1]; s.textContent = it[0];
+    c.appendChild(b); c.appendChild(s); d.appendChild(c);
+  });
+}
+
+function hitung(){
+  var b = parseFloat(el('berat').value), cm = parseFloat(el('tinggi').value), t = cm / 100, err = el('err');
+  function stop(m){ err.textContent = m; el('hasil').hidden = true; }
+  if (!el('gBmi').value) return stop('Pilih jenis kelaminmu dulu ya.');
+  if (!(b > 0) || !(cm > 0)) return stop('Isi berat dan tinggi badanmu dengan angka yang valid ya.');
+  if (cm < 50 || cm > 250 || b < 10 || b > 400) return stop('Angkanya tampak belum pas. Cek lagi berat (kg) dan tinggi (cm) ya.');
+  err.textContent = '';
+
+  var g = el('gBmi').value, bmi = b / (t * t);
+  var d = DATA[bmi < 18.5 ? 'kurus' : bmi < 25 ? 'normal' : bmi < 30 ? 'gemuk' : 'obesitas'];
+  var lo = 18.5 * t * t, hi = 24.9 * t * t, br = (cm - 100) * (g === '1' ? 0.9 : 0.85);
+  var gap = b < lo ? lo - b : b > hi ? b - hi : 0;
+
+  el('vd').textContent = d.head;
+  el('bmi').textContent = bmi.toFixed(1);
+  var chip = el('kat'); chip.textContent = d.kat; chip.style.background = d.color; chip.style.color = d.fg;
+  el('story').textContent = d.story(gap);
+
+  var mn = Math.min(15 * t * t, b * 0.97, br * 0.97), mx = Math.max(38 * t * t, b * 1.03, br * 1.03), ob = 30 * t * t;
+  drawBar('barBerat', {min:mn, max:mx, pin:b, tick:br, segs:[
+    [mn, lo, 'var(--c1)', 'Kurus'], [lo, hi, 'var(--c2)', 'Normal'], [hi, ob, 'var(--c3)', 'Gemuk'], [ob, mx, 'var(--c4)', 'Obesitas']]});
+  legend('legBerat', [['p', '', 'Kamu ' + r1(b) + ' kg'], ['t', '', 'Broca ' + r1(br) + ' kg']]);
+  stats('stBerat', [['Berat ideal (IMT)', Math.round(lo) + '\u2013' + Math.round(hi) + ' kg'], ['Berat ideal (Broca)', r1(br) + ' kg'], ['Tinggimu vs rata-rata RI', sgn(cm - RATA[g])]]);
+
+  var ls = el('langkah'); ls.textContent = '';
+  d.steps.forEach(function(s){ var li = document.createElement('li'); li.textContent = s; ls.appendChild(li); });
+  var ul = el('tutor'); ul.textContent = '';
+  d.links.concat([['YouTube: \u201C' + d.yt + '\u201D', 'https://www.youtube.com/results?search_query=' + encodeURIComponent(d.yt)]])
+    .forEach(function(l){
+      var li = document.createElement('li'), a = document.createElement('a');
+      a.href = l[1]; a.textContent = l[0]; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      li.appendChild(a); ul.appendChild(li);
+    });
+
+  el('hasil').hidden = false;
+  el('hasil').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function prediksi(){
+  var g = el('gender').value, a = parseFloat(el('ayah').value), i = parseFloat(el('ibu').value), err = el('err2');
+  function stop(m){ err.textContent = m; el('hasil2').hidden = true; }
+  if (g !== '1' && g !== '2') return stop('Pilih jenis kelaminmu dulu ya.');
+  if (!(a > 0) || !(i > 0)) return stop('Isi tinggi ayah dan ibumu dengan angka yang valid ya.');
+  if (a < 120 || a > 230 || i < 120 || i > 230) return stop('Tinggi orang tua tampak belum pas. Cek lagi angkanya (dalam cm) ya.');
+  err.textContent = '';
+
+  var tp = g === '1' ? (i + 13 + a) / 2 : (a - 13 + i) / 2;
+  var avg = RATA[g], dd = tp - avg, jk = g === '1' ? 'pria' : 'wanita', c;
+  var awal = 'Kamu diprediksi mencapai sekitar ' + r1(tp) + ' cm, ';
+  if (dd > 1) c = {head:'\uD83D\uDCC8 Kamu punya modal tinggi yang bagus', chip:'Di atas rata-rata',
+    story: awal + Math.round(dd) + ' cm di atas rata-rata ' + jk + ' Indonesia. Modal genetik yang bagus, tinggal dijaga lewat gizi dan gaya hidup sehat.'};
+  else if (dd < -1) c = {head:'\uD83C\uDF1F Tinggi bukan ukuran segalanya', chip:'Di bawah rata-rata',
+    story: awal + Math.round(-dd) + ' cm di bawah rata-rata ' + jk + ' Indonesia. Itu hanya satu sisi dirimu. Postur, kebugaran, dan kebiasaan sehat jauh lebih menentukan bagaimana kamu terlihat dan merasa.'};
+  else c = {head:'\uD83D\uDC4D Pas di rata-rata Indonesia', chip:'Sekitar rata-rata',
+    story: awal + 'hampir sama dengan rata-rata ' + jk + ' Indonesia (' + avg + ' cm). Tinggi yang sangat umum, dan tidak kurang apa pun darinya.'};
+
+  el('vd2').textContent = c.head;
+  el('tp').textContent = r1(tp) + ' cm';
+  var chip = el('tpk'); chip.textContent = c.chip; chip.style.background = ZONE; chip.style.color = '#06231e';
+  el('story2').textContent = c.story;
+
+  var lo = tp - 8.5, hi = tp + 8.5;
+  drawBar('barTinggi', {min:Math.min(140, tp - 13.5), max:Math.max(200, tp + 13.5), pin:tp, tick:avg,
+    segs:[[lo, hi, ZONE, Math.round(lo) + '\u2013' + Math.round(hi)]]});
+  legend('legTinggi', [['', ZONE, 'Kisaran prediksi'], ['p', '', 'Prediksimu ' + r1(tp) + ' cm'], ['t', '', 'Rata-rata RI ' + avg + ' cm']]);
+  stats('stTinggi', [['Kisaran prediksi', Math.round(lo) + '\u2013' + Math.round(hi) + ' cm'], ['Rata-rata RI (' + jk + ')', avg + ' cm'], ['Selisih dari rata-rata', sgn(dd)]]);
+
+  el('hasil2').hidden = false;
+  el('hasil2').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function tab(n){
+  var t = n === 'tinggi';
+  el('berat').closest('.card').classList.toggle('off', t);
+  el('hasil').classList.toggle('off', t);
+  el('panelTinggi').classList.toggle('off', !t);
+  el('tabBmi').setAttribute('aria-pressed', String(!t));
+  el('tabTinggi').setAttribute('aria-pressed', String(t));
+  el('sub').textContent = t ? SUB.tinggi : SUB.bmi;
+}
+
+document.querySelectorAll('.choice').forEach(function(grp){
+  grp.addEventListener('click', function(e){
+    var b = e.target.closest('button');
+    if (!b) return;
+    grp.querySelectorAll('button').forEach(function(x){ x.setAttribute('aria-checked', String(x === b)); });
+    el(grp.dataset.for).value = b.dataset.v;
+    if (e.detail) b.blur();
+  });
+});
+el('tabBmi').addEventListener('click', function(e){ tab('bmi'); if (e.detail) this.blur(); });
+el('tabTinggi').addEventListener('click', function(e){ tab('tinggi'); if (e.detail) this.blur(); });
+el('hitung').addEventListener('click', hitung);
+el('prediksi').addEventListener('click', prediksi);
+['berat','tinggi'].forEach(function(id){ el(id).addEventListener('keydown', function(e){ if (e.key === 'Enter') hitung(); }); });
+['ayah','ibu'].forEach(function(id){ el(id).addEventListener('keydown', function(e){ if (e.key === 'Enter') prediksi(); }); });
+tab('bmi');
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function(){
+    try { navigator.serviceWorker.register('sw.js'); } catch (e) {}
+  });
+}
+</script>
+</body>
+</html>
